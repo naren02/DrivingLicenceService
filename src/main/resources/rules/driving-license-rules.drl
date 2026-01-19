@@ -1,0 +1,96 @@
+package rules
+
+import com.example.dl.model.LicenseApplication;
+
+/* ----------------------------------
+   DEBUG – confirm rule execution
+----------------------------------- */
+rule "DEBUG - LicenseApplication received"
+when
+    $app : LicenseApplication()
+then
+    System.out.println("DEBUG fired for applicant: " + $app.getApplicantId());
+    System.out.println("DOB = " + $app.getDateOfBirth());
+    System.out.println("Age = " + $app.getAge());
+    System.out.println("eeligibile = " + $app.isEligible());
+end
+
+/* ----------------------------------
+   Rule 1: Reject under 18
+----------------------------------- */
+rule "Reject if under 18"
+when
+    $app : LicenseApplication(
+        dateOfBirth != null,
+        age < 18,
+        eligible == false
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Applicant is under 18 years old");
+end
+
+/* ----------------------------------
+   Rule 2: No learner permit
+----------------------------------- */
+rule "Reject if no learner permit"
+when
+    $app : LicenseApplication(
+        learnerPermit == false
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Learner permit is required");
+end
+
+/* ----------------------------------
+   Rule 3: Theory test not passed
+----------------------------------- */
+rule "Reject if theory test not passed"
+when
+    $app : LicenseApplication(
+        theoryTestPassed == false
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Theory test not passed");
+end
+
+/* ----------------------------------
+   Rule 4: Driving test not passed
+----------------------------------- */
+rule "Reject if driving test not passed"
+when
+    $app : LicenseApplication(
+        drivingTestPassed == false
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Driving test not passed");
+end
+
+/* ----------------------------------
+   Rule 5: Too many violations
+----------------------------------- */
+rule "Reject if too many traffic violations"
+when
+    $app : LicenseApplication(
+        trafficViolationsLastYear > 2
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Too many traffic violations in the last year");
+end
+
+/* ----------------------------------
+   Rule 6: Medically unfit
+----------------------------------- */
+rule "Reject if medically unfit"
+when
+    $app : LicenseApplication(
+        medicallyFit == false
+    )
+then
+    $app.setEligible(false);
+    $app.setRejectionReason("Applicant is medically unfit");
+end
